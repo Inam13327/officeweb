@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1c04d73d-b4b2-44b4-bb32-f24ec5e1774e",
+    "name": "Premium Perfumes",
+    "slug": "premium",
+    "tier": "premium"
+  },
+  {
+    "id": "69f887ba-b7b7-4815-9542-f0848e4c3b0a",
+    "name": "Medium Range Perfumes",
+    "slug": "medium",
+    "tier": "medium"
+  },
+  {
+    "id": "9e4ed2fe-e5e5-4374-ba35-d8a15d048561",
+    "name": "Basic / Budget Perfumes",
+    "slug": "basic",
+    "tier": "basic"
+  },
+  {
+    "id": "2922258c-d2f1-480e-b883-64afa0a4837a",
+    "name": "Men",
+    "slug": "men",
+    "tier": "segment-men"
+  },
+  {
+    "id": "c07cd07e-7841-4609-b4b6-b3ddbe97b979",
+    "name": "Women",
+    "slug": "women",
+    "tier": "segment-women"
+  },
+  {
+    "id": "4d08257c-6eaf-4cc5-a372-3d6ebc410962",
+    "name": "Unisex",
+    "slug": "unisex",
+    "tier": "segment-unisex"
+  }
+]

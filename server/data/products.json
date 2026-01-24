@@ -1,0 +1,42 @@
+[
+  {
+    "id": "35a02ed6-a77f-4ccc-abcc-cf04d6e8d7ff",
+    "name": "dk shah",
+    "description": "",
+    "brand": "ASSAIMART",
+    "size": "100ml",
+    "price": 6543,
+    "categorySlug": "medium",
+    "segment": "women",
+    "tier": "medium",
+    "productType": "Perfume",
+    "featuredHome": false,
+    "featuredMen": false,
+    "featuredWomen": false,
+    "featuredUnisex": false,
+    "imageUrl": "",
+    "notes": "",
+    "available": true,
+    "ratingMedia": []
+  },
+  {
+    "id": "8d43cd42-7027-4932-be35-5391c2f344b5",
+    "name": "mnb",
+    "description": "",
+    "brand": "ASSAIMART",
+    "size": "100ml",
+    "price": 9,
+    "categorySlug": "premium",
+    "segment": "men",
+    "tier": "premium",
+    "productType": "clok",
+    "featuredHome": false,
+    "featuredMen": false,
+    "featuredWomen": false,
+    "featuredUnisex": false,
+    "imageUrl": "",
+    "notes": "",
+    "available": true,
+    "ratingMedia": []
+  }
+]

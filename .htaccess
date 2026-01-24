@@ -1,0 +1,15 @@
+RewriteEngine On
+
+# Pass Authorization header to Node.js
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
+# Route all requests to the Node.js application
+# Hostinger's "Setup Node.js App" typically handles the main routing via Phusion Passenger
+# But this ensures rules are explicit if needed.
+
+# If the requested file or directory exists, serve it directly
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Otherwise, forward to the app entry point
+RewriteRule ^(.*)$ app.js [QSA,L]
