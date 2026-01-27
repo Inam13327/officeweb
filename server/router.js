@@ -22,11 +22,11 @@ async function requireAdmin(req, res) {
 }
 
 // --- ADMIN AUTH ROUTES ---
-
-router.post("/api/admin/login", async (req, res) => {
+// URL: /api/admin/login
+router.post("/admin/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    // Filhal hum email check kar rahe hain, aap isay DB se bhi verify kar sakte hain
+    // Database connection check: image_3010fe.png dikhati hai ke DB connected hai
     if (email === "assaimartofficial@gmail.com" && verifyPassword(password, hashPassword("AssaiMart123#"))) {
       const token = createToken("admin_id_123");
       return res.json({
@@ -41,8 +41,8 @@ router.post("/api/admin/login", async (req, res) => {
 });
 
 // --- PUBLIC ROUTES ---
-
-router.get("/api/products", async (req, res) => {
+// URL: /api/products
+router.get("/products", async (req, res) => {
   try {
     const query = req.query;
     let filter = {};
@@ -59,7 +59,8 @@ router.get("/api/products", async (req, res) => {
   }
 });
 
-router.get("/api/products/:id", async (req, res) => {
+// URL: /api/products/:id
+router.get("/products/:id", async (req, res) => {
   try {
     const product = await Product.findOne({ id: req.params.id });
     product ? res.json(product) : res.status(404).send("Not found");
@@ -68,7 +69,8 @@ router.get("/api/products/:id", async (req, res) => {
   }
 });
 
-router.post("/api/checkout", async (req, res) => {
+// URL: /api/checkout
+router.post("/checkout", async (req, res) => {
   try {
     const { items, customer } = req.body;
     const newOrder = new Order({
@@ -85,7 +87,8 @@ router.post("/api/checkout", async (req, res) => {
   }
 });
 
-router.post("/api/contact", async (req, res) => {
+// URL: /api/contact
+router.post("/contact", async (req, res) => {
   try {
     const newMessage = new Message({ ...req.body, id: uuidv4() });
     await newMessage.save();
@@ -95,7 +98,8 @@ router.post("/api/contact", async (req, res) => {
   }
 });
 
-router.get("/api/categories", async (req, res) => {
+// URL: /api/categories
+router.get("/categories", async (req, res) => {
   try {
     const categories = await Category.find();
     res.json(categories);
@@ -106,7 +110,7 @@ router.get("/api/categories", async (req, res) => {
 
 // --- ADMIN MANAGEMENT ROUTES ---
 
-router.get("/api/admin/overview", async (req, res) => {
+router.get("/admin/overview", async (req, res) => {
   if (!(await requireAdmin(req, res))) return;
   const totalProducts = await Product.countDocuments();
   const totalOrders = await Order.countDocuments();
@@ -114,38 +118,38 @@ router.get("/api/admin/overview", async (req, res) => {
   res.json({ totalProducts, totalOrders, unreadMessages });
 });
 
-router.get("/api/admin/products", async (req, res) => {
+router.get("/admin/products", async (req, res) => {
   if (!(await requireAdmin(req, res))) return;
   const products = await Product.find();
   res.json(products);
 });
 
-router.post("/api/admin/products", async (req, res) => {
+router.post("/admin/products", async (req, res) => {
   if (!(await requireAdmin(req, res))) return;
   const product = new Product({ ...req.body, id: uuidv4() });
   await product.save();
   res.status(201).json(product);
 });
 
-router.put("/api/admin/products/:id", async (req, res) => {
+router.put("/admin/products/:id", async (req, res) => {
   if (!(await requireAdmin(req, res))) return;
   const updated = await Product.findOneAndUpdate({ id: req.params.id }, req.body, { new: true });
   res.json(updated);
 });
 
-router.delete("/api/admin/products/:id", async (req, res) => {
+router.delete("/admin/products/:id", async (req, res) => {
   if (!(await requireAdmin(req, res))) return;
   await Product.deleteOne({ id: req.params.id });
   res.json({ success: true });
 });
 
-router.get("/api/admin/orders", async (req, res) => {
+router.get("/admin/orders", async (req, res) => {
   if (!(await requireAdmin(req, res))) return;
   const orders = await Order.find().sort({ createdAt: -1 });
   res.json(orders);
 });
 
-router.get("/api/admin/messages", async (req, res) => {
+router.get("/admin/messages", async (req, res) => {
   if (!(await requireAdmin(req, res))) return;
   const messages = await Message.find().sort({ createdAt: -1 });
   res.json(messages);
