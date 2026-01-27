@@ -1,5 +1,6 @@
 import type { AdminAuthResponse, AdminOverview, AdminProduct, AdminProductInput, Order, Product } from "./types";
 
+// Confirm karein ke aapka Vercel URL yahi hai
 const API_BASE = "https://officeweb-gamma.vercel.app/api";
 
 function logApiError(details: { method: string; path: string; status?: number; message?: string; error?: unknown }) {
@@ -8,19 +9,27 @@ function logApiError(details: { method: string; path: string; status?: number; m
 
 async function request<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers || {});
+  
   if (!headers.has("Content-Type") && options.body && !(options.body instanceof FormData)) {
     headers.set("Content-Type", "application/json");
   }
+
   const token = typeof window !== "undefined" ? window.localStorage.getItem("adminToken") : null;
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
+
   try {
     const method = options.method || "GET";
-    const res = await fetch(`${API_BASE}${path}`, {
+    const fullUrl = `${API_BASE}${path}`;
+
+    const res = await fetch(fullUrl, {
       ...options,
       headers,
+      mode: "cors", // Explicitly enable CORS
+      credentials: "include", // Cookies/Sessions ke liye zaroori hai
     });
+
     const text = await res.text();
     let data: unknown = null;
     if (text) {
@@ -30,6 +39,7 @@ async function request<T = unknown>(path: string, options: RequestInit = {}): Pr
         data = text;
       }
     }
+
     if (!res.ok) {
       const errorMessage =
         typeof data === "object" && data !== null && "error" in data && typeof (data as { error: unknown }).error === "string"
@@ -37,9 +47,10 @@ async function request<T = unknown>(path: string, options: RequestInit = {}): Pr
           : typeof data === "object" && data !== null && "message" in data && typeof (data as { message: unknown }).message === "string"
             ? (data as { message: string }).message
             : res.statusText;
+      
       logApiError({
         method,
-        path: `${API_BASE}${path}`,
+        path: fullUrl,
         status: res.status,
         message: errorMessage,
       });
@@ -113,7 +124,6 @@ export function getProducts(params?: { category?: string; segment?: string; tier
   return request<RawProduct[]>(`/products${suffix}`).then((items) => items.map(transformProduct));
 }
 
-// Ye function missing tha build mein:
 export function getProductTypes() {
   return request<RawProduct[]>("/products").then((items) => {
     const types = new Set<string>();
