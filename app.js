@@ -4,7 +4,7 @@ import { router } from "./server/router.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
-import mongoose from "mongoose"; // Naya addition
+import mongoose from "mongoose";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,7 +13,6 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // --- DATABASE CONNECTION ---
-// Aapka MongoDB Atlas connection string
 const mongoURI = "mongodb+srv://inam13327:Lenovopc123#.@cluster0.fxjutdn.mongodb.net/ecommerce?retryWrites=true&w=majority";
 
 mongoose.connect(mongoURI)
@@ -22,7 +21,13 @@ mongoose.connect(mongoURI)
 // ---------------------------
 
 // Middleware
-app.use(cors());
+// Behtar CORS settings takay Hostinger se data fetch ho sakay
+app.use(cors({
+  origin: "*", // Filhal sab allow hai, baad mein apna domain dal dena
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -31,36 +36,24 @@ app.use(router);
 
 // Serve static files
 let distPath = path.join(__dirname, "dist");
-
 app.use(express.static(distPath));
 
 // Handle client-side routing
 app.get(/.*/, (req, res) => {
-  if (distPath === __dirname) {
-    const reqPath = req.path;
-    if (
-      reqPath.startsWith("/server") || 
-      reqPath.startsWith("/node_modules") || 
-      reqPath.startsWith("/.git") ||
-      reqPath.startsWith("/.env") ||
-      reqPath === "/package.json"
-    ) {
-      return res.status(404).send("Not found");
-    }
-  }
-
   const indexPath = path.join(distPath, "index.html");
+  
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
+    // Agar API route nahi hai to frontend error, warna JSON error
     if (!req.path.startsWith("/api")) {
-        res.status(404).send("Frontend build not found. Please run 'npm run build'.");
+        res.status(404).send("Frontend build not found. API is running at /api");
     } else {
-        res.status(404).json({ error: "Not found" });
+        res.status(404).json({ error: "API Route Not Found" });
     }
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
+  console.log(`🚀 API Server is live at: https://officeweb-gamma.vercel.app`);
 });
