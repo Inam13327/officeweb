@@ -56,7 +56,7 @@ const AdminLogin = () => {
 
   const handleVerify = () => {
     const value = verificationAnswer.trim();
-    if (value === "Lenovopc123#") {
+    if (value === "123#") {
       setResetStep("new_password");
       setResetError("");
     } else {
