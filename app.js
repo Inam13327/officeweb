@@ -15,14 +15,11 @@ const PORT = process.env.PORT || 4000;
 // --- DATABASE CONNECTION ---
 const mongoURI = "mongodb+srv://inam13327:Lenovopoc@cluster0.fxjutdn.mongodb.net/ecommerce?retryWrites=true&w=majority";
 
-// Connection options add kiye hain takay timeout na ho
 mongoose.connect(mongoURI, {
   serverSelectionTimeoutMS: 5000
 })
   .then(() => console.log("✅ MongoDB Atlas Connected Successfully!"))
-  .catch(err => {
-    console.error("❌ Database Connection Error:", err.message);
-  });
+  .catch(err => console.error("❌ Database Connection Error:", err.message));
 
 // --- MIDDLEWARE & CORS ---
 const allowedOrigins = ["https://assaimart.com", "http://localhost:5173", "http://localhost:3000"];
@@ -40,7 +37,8 @@ app.use(cors({
   credentials: true
 }));
 
-app.options('*', cors());
+// FIXED: '*' ko '(.*)' se replace kiya gaya hai Vercel compatibility ke liye
+app.options('(.*)', cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -48,24 +46,18 @@ app.use(express.urlencoded({ extended: true }));
 // --- API ROUTES ---
 app.use(router);
 
-// Default Error Handler (Takay {"error": "Server error"} ki jagah sahi error dikhay)
-app.use((err, req, res, next) => {
-  console.error("Server Crash Error:", err.stack);
-  res.status(500).json({ 
-    error: "Internal Server Error", 
-    message: err.message 
-  });
-});
-
 // Serve static files
 let distPath = path.join(__dirname, "dist");
 app.use(express.static(distPath));
 
-app.get(/.*/, (req, res) => {
+// FIXED: Path regex ko theek kiya gaya hai
+app.get('/:path*', (req, res) => {
   const indexPath = path.join(distPath, "index.html");
+  
   if (req.path.startsWith("/api")) {
     return res.status(404).json({ error: "API Route Not Found" });
   }
+
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
