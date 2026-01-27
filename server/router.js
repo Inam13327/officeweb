@@ -22,12 +22,16 @@ async function requireAdmin(req, res) {
 }
 
 // --- ADMIN AUTH ROUTES ---
-// URL: /api/admin/login
 router.post("/admin/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    // Database connection check: image_3010fe.png dikhati hai ke DB connected hai
-    if (email === "assaimartofficial@gmail.com" && verifyPassword(password, hashPassword("AssaiMart123#"))) {
+    
+    // FIX: verifyPassword mein seedha plain text "AssaiMart123#" check karein
+    // Agar aapne password hash karke save kiya hai toh hash variable pass karein
+    const adminEmail = "assaimartofficial@gmail.com";
+    const staticHash = hashPassword("AssaiMart123#"); 
+
+    if (email === adminEmail && verifyPassword(password, staticHash)) {
       const token = createToken("admin_id_123");
       return res.json({
         token,
@@ -36,12 +40,12 @@ router.post("/admin/login", async (req, res) => {
     }
     res.status(401).json({ error: "Invalid credentials" });
   } catch (e) {
+    console.error("Login Error:", e);
     res.status(500).json({ error: "Login failed" });
   }
 });
 
 // --- PUBLIC ROUTES ---
-// URL: /api/products
 router.get("/products", async (req, res) => {
   try {
     const query = req.query;
@@ -59,7 +63,6 @@ router.get("/products", async (req, res) => {
   }
 });
 
-// URL: /api/products/:id
 router.get("/products/:id", async (req, res) => {
   try {
     const product = await Product.findOne({ id: req.params.id });
@@ -69,7 +72,6 @@ router.get("/products/:id", async (req, res) => {
   }
 });
 
-// URL: /api/checkout
 router.post("/checkout", async (req, res) => {
   try {
     const { items, customer } = req.body;
@@ -87,7 +89,6 @@ router.post("/checkout", async (req, res) => {
   }
 });
 
-// URL: /api/contact
 router.post("/contact", async (req, res) => {
   try {
     const newMessage = new Message({ ...req.body, id: uuidv4() });
@@ -98,7 +99,6 @@ router.post("/contact", async (req, res) => {
   }
 });
 
-// URL: /api/categories
 router.get("/categories", async (req, res) => {
   try {
     const categories = await Category.find();
