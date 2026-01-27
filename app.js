@@ -15,13 +15,11 @@ const PORT = process.env.PORT || 4000;
 // --- DATABASE CONNECTION ---
 const mongoURI = "mongodb+srv://inam13327:Lenovopoc@cluster0.fxjutdn.mongodb.net/ecommerce?retryWrites=true&w=majority";
 
-mongoose.connect(mongoURI, {
-  serverSelectionTimeoutMS: 5000
-})
-  .then(() => console.log("✅ MongoDB Atlas Connected Successfully!"))
-  .catch(err => console.error("❌ Database Connection Error:", err.message));
+mongoose.connect(mongoURI)
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch(err => console.error("❌ DB Error:", err.message));
 
-// --- MIDDLEWARE & CORS ---
+// --- CORS CONFIG ---
 const allowedOrigins = ["https://assaimart.com", "http://localhost:5173", "http://localhost:3000"];
 
 app.use(cors({
@@ -29,42 +27,39 @@ app.use(cors({
     if (!origin || allowedOrigins.indexOf(origin) !== -1 || origin.includes('vercel.app')) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error('CORS blocked'));
     }
   },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
   credentials: true
 }));
 
-// FIXED: '*' ko '(.*)' se replace kiya gaya hai Vercel compatibility ke liye
-app.options('(.*)', cors());
+// Pre-flight requests ke liye simple middleware (Wildcard error se bachne ke liye)
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// --- API ROUTES ---
-app.use(router);
+// --- ROUTES ---
+app.use("/api", router); // Saare API routes /api se shuru honge
 
-// Serve static files
-let distPath = path.join(__dirname, "dist");
+// Static files logic
+const distPath = path.join(__dirname, "dist");
 app.use(express.static(distPath));
 
-// FIXED: Path regex ko theek kiya gaya hai
-app.get('/:path*', (req, res) => {
-  const indexPath = path.join(distPath, "index.html");
-  
+// Frontend Fallback (Simple path for Vercel)
+app.get("*", (req, res) => {
   if (req.path.startsWith("/api")) {
-    return res.status(404).json({ error: "API Route Not Found" });
+    return res.status(404).json({ error: "API not found" });
   }
-
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    res.status(404).send("Frontend build not found.");
-  }
+  res.sendFile(path.join(distPath, "index.html"), (err) => {
+    if (err) res.status(404).send("Build not found");
+  });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server on ${PORT}`));
