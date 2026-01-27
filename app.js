@@ -13,9 +13,7 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // --- DATABASE CONNECTION ---
-const mongoURI = "mongodb+srv://inam13327:Lenovopc@cluster0.fxjutdn.mongodb.net/ecommerce?retryWrites=true&w=majority";
-
-mongoose.connect(mongoURI)
+const mongoURI = "mongodb+srv://inam13327:Lenovopoc@cluster0.fxjutdn.mongodb.net/ecommerce?retryWrites=true&w=majority";ongoose.connect(mongoURI)
   .then(() => console.log("✅ MongoDB Atlas Connected Successfully!"))
   .catch(err => console.error("❌ Database Connection Error:", err));
 // ---------------------------
