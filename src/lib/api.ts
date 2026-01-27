@@ -145,6 +145,7 @@ export function sendContactMessage(payload: { name: string; email: string; subje
 }
 
 export function subscribeNewsletter(email: string) {
+  console.log('subscribeNewsletter');
   return request("/newsletter/subscribe", {
     method: "POST",
     body: JSON.stringify({ email }),

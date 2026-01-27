@@ -13,8 +13,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "node server/index.js",
-    "server": "node server/index.js",
+    "start": "node app.js",
+    "server": "node app.js",
     "dev:full": "npm-run-all --parallel server dev"
   },
   "dependencies": {
