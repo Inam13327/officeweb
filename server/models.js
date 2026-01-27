@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+// --- PRODUCT SCHEMA ---
 const ProductSchema = new mongoose.Schema({
   id: String,
   name: String,
@@ -14,8 +15,9 @@ const ProductSchema = new mongoose.Schema({
   available: { type: Boolean, default: true },
   featuredHome: Boolean,
   createdAt: { type: Date, default: Date.now }
-}, { strict: false }); // strict false takay aapka purana sara data accept ho jaye
+}, { strict: false }); // strict: false allows flexible data entry
 
+// --- ORDER SCHEMA ---
 const OrderSchema = new mongoose.Schema({
   id: String,
   items: Array,
@@ -24,6 +26,7 @@ const OrderSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+// --- MESSAGE SCHEMA ---
 const MessageSchema = new mongoose.Schema({
   id: String,
   name: String,
@@ -34,6 +37,7 @@ const MessageSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+// --- CATEGORY SCHEMA ---
 const CategorySchema = new mongoose.Schema({
   id: String,
   name: String,
@@ -41,7 +45,12 @@ const CategorySchema = new mongoose.Schema({
   tier: String
 });
 
-export const Product = mongoose.model("Product", ProductSchema);
-export const Order = mongoose.model("Order", OrderSchema);
-export const Message = mongoose.model("Message", MessageSchema);
-export const Category = mongoose.model("Category", CategorySchema);
+/**
+ * MODELS EXPORT
+ * Note: Teesra parameter ("products", "orders", etc.) wahi hona chahiye jo Atlas mein hai.
+ * Aapke Atlas screenshot ke mutabiq ye lowercase mein hain.
+ */
+export const Product = mongoose.model("Product", ProductSchema, "products");
+export const Order = mongoose.model("Order", OrderSchema, "orders");
+export const Message = mongoose.model("Message", MessageSchema, "messages");
+export const Category = mongoose.model("Category", CategorySchema, "categories");

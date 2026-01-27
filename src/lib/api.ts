@@ -1,7 +1,7 @@
 import type { AdminAuthResponse, AdminOverview, AdminProduct, AdminProductInput, Order, Product } from "./types";
 
-// Confirm karein ke aapka Vercel URL yahi hai
-const API_BASE = "https://officeweb-gamma.vercel.app/api";
+// Updated for Hostinger deployment (relative path)
+const API_BASE = "/api";
 
 function logApiError(details: { method: string; path: string; status?: number; message?: string; error?: unknown }) {
   console.error("[API ERROR]", details);
@@ -19,6 +19,17 @@ async function request<T = unknown>(path: string, options: RequestInit = {}): Pr
     headers.set("Authorization", `Bearer ${token}`);
   }
 
+  // Pre-check: If accessing admin API without token, redirect immediately
+  // We exclude "/admin/login" because that's the public endpoint to get the token
+  if (!token && path.startsWith("/admin") && !path.includes("/login")) {
+    if (typeof window !== "undefined") {
+       console.warn("[Auth] Missing token for admin request, redirecting to login.");
+       window.location.href = "/admin/login";
+       // Throw error to stop execution
+       throw new Error("Unauthorized: Missing token");
+    }
+  }
+
   try {
     const method = options.method || "GET";
     const fullUrl = `${API_BASE}${path}`;
@@ -29,6 +40,19 @@ async function request<T = unknown>(path: string, options: RequestInit = {}): Pr
       mode: "cors", // Explicitly enable CORS
       credentials: "include", // Cookies/Sessions ke liye zaroori hai
     });
+
+    // Handle 401 Unauthorized globally
+    if (res.status === 401) {
+      if (typeof window !== "undefined") {
+        console.warn("[Auth] 401 Unauthorized, clearing token and redirecting.");
+        window.localStorage.removeItem("adminToken");
+        window.localStorage.removeItem("adminUser");
+        // Only redirect if we are not already on the login page to avoid loops
+        if (!window.location.pathname.includes("/admin/login")) {
+             window.location.href = "/admin/login";
+        }
+      }
+    }
 
     const text = await res.text();
     let data: unknown = null;
