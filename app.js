@@ -13,16 +13,20 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // --- DATABASE CONNECTION ---
-const mongoURI = "mongodb+srv://inam13327:Lenovopoc@cluster0.fxjutdn.mongodb.net/ecommerce?retryWrites=true&w=majority";ongoose.connect(mongoURI)
+// Password: Lenovopoc (Typo fix kiya gaya hai)
+const mongoURI = "mongodb+srv://inam13327:Lenovopoc@cluster0.fxjutdn.mongodb.net/ecommerce?retryWrites=true&w=majority";
+
+mongoose.connect(mongoURI)
   .then(() => console.log("✅ MongoDB Atlas Connected Successfully!"))
   .catch(err => console.error("❌ Database Connection Error:", err));
 // ---------------------------
 
-// Middleware
-// Behtar CORS settings takay Hostinger se data fetch ho sakay
+// --- MIDDLEWARE & CORS ---
 app.use(cors({
-  origin: "*", // Filhal sab allow hai, baad mein apna domain dal dena
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  // Hostinger domain aur local development dono allow hain
+  origin: ["https://assaimart.com", "http://localhost:5173", "http://localhost:3000"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
 
@@ -32,18 +36,18 @@ app.use(express.urlencoded({ extended: true }));
 // API Routes
 app.use(router);
 
-// Serve static files
+// Serve static files (Vercel deployment ke liye)
 let distPath = path.join(__dirname, "dist");
 app.use(express.static(distPath));
 
-// Handle client-side routing
+// Handle client-side routing (React Router support)
 app.get(/.*/, (req, res) => {
   const indexPath = path.join(distPath, "index.html");
   
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
-    // Agar API route nahi hai to frontend error, warna JSON error
+    // Agar route /api se start nahi ho raha to 404 error
     if (!req.path.startsWith("/api")) {
         res.status(404).send("Frontend build not found. API is running at /api");
     } else {
@@ -52,6 +56,7 @@ app.get(/.*/, (req, res) => {
   }
 });
 
+// Server Start
 app.listen(PORT, () => {
   console.log(`🚀 API Server is live at: https://officeweb-gamma.vercel.app`);
 });
