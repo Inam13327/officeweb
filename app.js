@@ -3,7 +3,6 @@ import cors from "cors";
 import { router } from "./server/router.js";
 import path from "path";
 import { fileURLToPath } from "url";
-import fs from "fs";
 import mongoose from "mongoose";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -13,6 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // --- DATABASE CONNECTION ---
+// Aapka database setup bilkul sahi hai
 const mongoURI = "mongodb+srv://inam13327:Lenovopoc@cluster0.fxjutdn.mongodb.net/ecommerce?retryWrites=true&w=majority";
 
 mongoose.connect(mongoURI)
@@ -24,6 +24,7 @@ const allowedOrigins = ["https://assaimart.com", "http://localhost:5173", "http:
 
 app.use(cors({
   origin: function (origin, callback) {
+    // Vercel preview URLs aur allowed origins ko permit karna
     if (!origin || allowedOrigins.indexOf(origin) !== -1 || origin.includes('vercel.app')) {
       callback(null, true);
     } else {
@@ -33,33 +34,34 @@ app.use(cors({
   credentials: true
 }));
 
-// Pre-flight requests ke liye simple middleware (Wildcard error se bachne ke liye)
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-  next();
-});
-
+// --- MIDDLEWARE ---
 app.use(express.json());
 
-// --- ROUTES ---
-app.use("/api", router); // Saare API routes /api se shuru honge
+// Path-to-regexp error se bachne ke liye generic pre-flight handler
+app.options('*', cors()); 
 
-// Static files logic
+// --- API ROUTES ---
+// Logs ke mutabiq /api/products crash ho raha tha
+app.use("/api", router); 
+
+// --- STATIC FILES & FRONTEND FALLBACK ---
 const distPath = path.join(__dirname, "dist");
 app.use(express.static(distPath));
 
-// Frontend Fallback (Simple path for Vercel)
+// Important: Wildcard matching ko simple rakhein
 app.get("*", (req, res) => {
-  if (req.path.startsWith("/api")) {
-    return res.status(404).json({ error: "API not found" });
+  // Agar request /api se start ho rahi hai toh index.html mat bhejo
+  if (req.originalUrl.startsWith("/api")) {
+    return res.status(404).json({ error: "API Route not found" });
   }
+  
   res.sendFile(path.join(distPath, "index.html"), (err) => {
-    if (err) res.status(404).send("Build not found");
+    if (err) {
+      res.status(404).send("Frontend build not found. Make sure 'dist' folder exists.");
+    }
   });
 });
 
-app.listen(PORT, () => console.log(`Server on ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+export default app; // Vercel compatibility ke liye
