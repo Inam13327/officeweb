@@ -4,12 +4,22 @@ import { router } from "./server/router.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import mongoose from "mongoose"; // Naya addition
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+
+// --- DATABASE CONNECTION ---
+// Aapka MongoDB Atlas connection string
+const mongoURI = "mongodb+srv://inam13327:Lenovopc123#.@cluster0.fxjutdn.mongodb.net/ecommerce?retryWrites=true&w=majority";
+
+mongoose.connect(mongoURI)
+  .then(() => console.log("✅ MongoDB Atlas Connected Successfully!"))
+  .catch(err => console.error("❌ Database Connection Error:", err));
+// ---------------------------
 
 // Middleware
 app.use(cors());
@@ -20,21 +30,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(router);
 
 // Serve static files
-// Since this file is in the root, dist should be in ./dist
 let distPath = path.join(__dirname, "dist");
 
-// Check if dist exists
-if (!fs.existsSync(distPath)) {
-  console.warn("Dist folder not found at " + distPath + ". Make sure to run 'npm run build' before starting the server in production.");
-  // Fallback to current directory if needed, but risky in root
-}
-
-// Serve static files from distPath
 app.use(express.static(distPath));
 
-// Handle client-side routing by serving index.html for all non-API routes
+// Handle client-side routing
 app.get(/.*/, (req, res) => {
-  // Security check: prevent serving sensitive files if distPath is root (which shouldn't happen with standard structure)
   if (distPath === __dirname) {
     const reqPath = req.path;
     if (
@@ -52,7 +53,6 @@ app.get(/.*/, (req, res) => {
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
-    // If index.html doesn't exist, it might be an API 404 or just missing build
     if (!req.path.startsWith("/api")) {
         res.status(404).send("Frontend build not found. Please run 'npm run build'.");
     } else {
@@ -62,5 +62,5 @@ app.get(/.*/, (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`API server listening on http://localhost:${PORT}`);
+  console.log(`🚀 Server is running on port ${PORT}`);
 });
