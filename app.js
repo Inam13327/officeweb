@@ -5,22 +5,24 @@ import path from "path";
 import { fileURLToPath } from "url";
 import mongoose from "mongoose";
 
+import fs from "fs";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 
 // --- DATABASE CONNECTION ---
-const mongoURI = "mongodb+srv://inam13327:Lenovopoc@cluster0.fxjutdn.mongodb.net/ecommerce?retryWrites=true&w=majority";
+const mongoURI = process.env.MONGODB_URI || "mongodb+srv://inam13327:Lenovopoc@cluster0.fxjutdn.mongodb.net/ecommerce?retryWrites=true&w=majority";
 
 mongoose.connect(mongoURI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.error("❌ DB Error:", err.message));
 
 // --- CORS CONFIG ---
-// Vercel par '*' ya standard wildcards ki wajah se error aata hai
+// Allow Hostinger frontend to access Vercel backend
 app.use(cors({
-  origin: true, // Sab origins ko allow karein (Testing ke liye)
+  origin: true, 
   credentials: true
 }));
 
@@ -34,18 +36,33 @@ app.use("/api", router);
 const distPath = path.join(__dirname, "dist");
 app.use(express.static(distPath));
 
-// Frontend Fallback - Bina kisi '*' ke
+// Frontend Fallback
+// Check if frontend exists (for Vercel backend-only mode)
+const indexHtmlPath = path.join(distPath, "index.html");
+
 app.get("/", (req, res) => {
-  res.sendFile(path.join(distPath, "index.html"));
+  if (fs.existsSync(indexHtmlPath)) {
+    res.sendFile(indexHtmlPath);
+  } else {
+    res.send("<h1>Backend is running!</h1><p>Frontend is hosted separately.</p>");
+  }
 });
 
-// Agar koi route match na ho toh index.html par bhej dein (Regex se bachne ke liye simple handler)
+// Agar koi route match na ho toh index.html par bhej dein
 app.use((req, res) => {
-  if (!req.url.startsWith("/api")) {
-    res.sendFile(path.join(distPath, "index.html"));
+  if (!req.url.startsWith("/api") && fs.existsSync(indexHtmlPath)) {
+    res.sendFile(indexHtmlPath);
   } else {
     res.status(404).json({ error: "API Route Not Found" });
   }
 });
+
+// Start Server if run directly (Hostinger/Local)
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
+}
 
 export default app;

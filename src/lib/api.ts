@@ -1,7 +1,8 @@
 import type { AdminAuthResponse, AdminOverview, AdminProduct, AdminProductInput, Order, Product } from "./types";
 
-// Updated for Hostinger deployment (relative path)
-const API_BASE = "/api";
+// Updated for Hostinger deployment
+// If VITE_API_URL is set (e.g. in .env), use it. Otherwise default to relative path.
+const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 function logApiError(details: { method: string; path: string; status?: number; message?: string; error?: unknown }) {
   console.error("[API ERROR]", details);
@@ -59,8 +60,11 @@ async function request<T = unknown>(path: string, options: RequestInit = {}): Pr
     if (text) {
       try {
         data = JSON.parse(text);
-      } catch {
-        data = text;
+      } catch (e) {
+        // If response is not JSON, it's likely an error (e.g. 404 HTML page or 500 stack trace)
+        // even if status is 200 (e.g. SPA fallback serving index.html)
+        console.error("[API] Failed to parse JSON response:", text.substring(0, 100));
+        throw new Error("Invalid server response (not JSON)");
       }
     }
 
