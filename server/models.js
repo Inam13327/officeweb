@@ -47,8 +47,7 @@ const CategorySchema = new mongoose.Schema({
 
 /**
  * MODELS EXPORT
- * Note: Teesra parameter ("products", "orders", etc.) wahi hona chahiye jo Atlas mein hai.
- * Aapke Atlas screenshot ke mutabiq ye lowercase mein hain.
+ * Note: Third parameter ("products", "orders", etc.) forces the collection name in Atlas.
  */
 export const Product = mongoose.model("Product", ProductSchema, "products");
 export const Order = mongoose.model("Order", OrderSchema, "orders");
